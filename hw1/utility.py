@@ -212,3 +212,40 @@ def Show_Word_on_chessboard(folder_path,input_str):
         cv2.waitKey(0)
     fs.release()
 # 2.2 sol.
+def Show_Word_ver_on_chessboard(folder_path,input_str):
+    images = []
+    for filename in os.listdir(folder_path):
+        img = cv2.imread(os.path.join(folder_path,filename))
+        if img is not None:
+            images.append(img)
+
+    # 1. Calibrate 5 images to get intrinsic, distortion and extrinsic parameters
+    Intrinsic_Mat,Distortion_Mat, rvecs, tvecs = get_parameters(folder_path)
+    
+    # 2. Show the words on every image
+    input_str = input_str.upper()
+    file_path = folder_path+'/Q2_lib/alphabet_lib_vertical.txt'
+    fs = cv2.FileStorage(file_path, cv2.FILE_STORAGE_READ)
+    anchor = [[7,5,0],[4,5,0],[1,5,0],[7,2,0],[4,2,0],[1,2,0]]
+    for i in range(len(images)):
+        # 2.1 draw every char on images
+        for pos,char in enumerate(input_str,0):
+            ch = fs.getNode(char).mat() 
+            lines,p1,p2 = ch.shape
+            # get line points of 3D real world 
+            for j in range(lines):
+                ch[j,0] = anchor[pos] + ch[j,0]
+                ch[j,1] = anchor[pos] + ch[j,1]
+            ch=ch.reshape(-1,3).astype(np.float32)
+            # get line poins of 2D image plane
+            imgpts, jac = cv2.projectPoints(ch, rvecs[i], tvecs[i], Intrinsic_Mat, Distortion_Mat)
+            # draw lines of each char on image
+            for point_idx in range(lines*2):
+                if(point_idx % 2==0):
+                    cv2.line(images[i],tuple(imgpts[point_idx].ravel().astype(np.int32)),tuple(imgpts[point_idx+1].ravel().astype(np.int32)),color=(0, 0, 255),thickness=10)
+        # 2.2 print result of each image 
+        cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
+        cv2.resizeWindow("Resized_Window", 500, 500) 
+        cv2.imshow('Resized_Window',images[i])
+        cv2.waitKey(1000)
+    fs.release()

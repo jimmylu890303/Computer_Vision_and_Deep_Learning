@@ -8,7 +8,7 @@ from utility import *
 class UI(QMainWindow):
     def __init__(self):
         super(UI,self).__init__()
-        loadUi("UI.ui",self)
+        loadUi("./hw1/UI.ui",self)
         self.folder_path = ""
         self.imageL_path = ""
         self.imageR_path = ""
@@ -23,6 +23,7 @@ class UI(QMainWindow):
         self.find_distortion_btn.clicked.connect(self.Find_Distortion_Matrix)
         self.show_q1result_btn.clicked.connect(self.Show_Undistorted_Result)
         self.show_words_hori_btn.clicked.connect(self.Show_Word_on_chessboard)
+        self.show_words_vert_btn.clicked.connect(self.Show_Word_ver_on_chessboard)
         self.spinBox.setRange(1,15)
 
        
@@ -45,6 +46,8 @@ class UI(QMainWindow):
         Show_Undistorted_Result(self.folder_path,self.intrinsic_mat,self.distortion_mat)
     def Show_Word_on_chessboard(self):
         Show_Word_on_chessboard(self.folder_path,self.question2_textEdit.toPlainText())
+    def Show_Word_ver_on_chessboard(self):
+        Show_Word_ver_on_chessboard(self.folder_path,self.question2_textEdit.toPlainText())
 
 
 app = QApplication(sys.argv)
