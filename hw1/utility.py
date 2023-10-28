@@ -292,3 +292,40 @@ def Stereo_Disparity_Map(img1_path,img2_path):
     cv2.imshow('disparity',disparity_visual)
     cv2.waitKey(0)       
     cv2.destroyAllWindows()
+# 4.1 sol.
+def find_keypoints(img_path):
+    image = cv2.imread(img_path)
+    sift = cv2.SIFT_create() 
+    keypoints, discriptors = sift.detectAndCompute(image,None)
+    gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    output = cv2.drawKeypoints(gray_image,keypoints,None,color=(0,255,0))
+
+    cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("output", 500, 500) 
+    cv2.imshow('output',output)
+    cv2.waitKey(0)
+# 4.2 sol.
+def match_keypoints(img1_path,img2_path):
+    sift = cv2.SIFT_create()
+
+    image1 = cv2.imread(img1_path, cv2.IMREAD_GRAYSCALE)
+    image2 = cv2.imread(img2_path, cv2.IMREAD_GRAYSCALE)
+
+    keypoints1, descriptors1 = sift.detectAndCompute(image1, None)
+    keypoints2, descriptors2 = sift.detectAndCompute(image2, None)
+    
+    bf = cv2.BFMatcher()
+
+    # KNN match
+    matches = bf.knnMatch(descriptors1, descriptors2, k=2)
+    # Get best match
+    best_matches = []
+    for m, n in matches:
+        if m.distance < 0.75 * n.distance:
+            best_matches.append(m)
+    # draw image
+    match_image = cv2.drawMatches(image1, keypoints1, image2, keypoints2, best_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("output", 1000, 500) 
+    cv2.imshow('output',match_image)
+    cv2.waitKey(0)
