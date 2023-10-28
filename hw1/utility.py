@@ -25,7 +25,7 @@ def find_and_draw_corners(folder_path):
         cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
         cv2.resizeWindow("Resized_Window", 500, 500) 
         cv2.imshow('Resized_Window',img)
-        cv2.waitKey(0)        
+        cv2.waitKey(1000)        
 # 1.2 sol
 def find_Intrinsic_Matrix(folder_path):
     images = []
@@ -142,7 +142,7 @@ def Show_Undistorted_Result(folder_path,Intrinsic_Mat,Distortion_Mat):
         Hori = np.concatenate((images[i], undistort_images[i]), axis=1) 
         
         cv2.imshow('Resized_Window',Hori)
-        cv2.waitKey(0)        
+        cv2.waitKey(1000)        
 # 2.1 sol.
 def get_parameters(folder_path):
     images = []
@@ -209,7 +209,7 @@ def Show_Word_on_chessboard(folder_path,input_str):
         cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
         cv2.resizeWindow("Resized_Window", 500, 500) 
         cv2.imshow('Resized_Window',images[i])
-        cv2.waitKey(0)
+        cv2.waitKey(1000)
     fs.release()
 # 2.2 sol.
 def Show_Word_ver_on_chessboard(folder_path,input_str):
