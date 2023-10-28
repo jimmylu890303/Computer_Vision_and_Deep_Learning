@@ -249,3 +249,46 @@ def Show_Word_ver_on_chessboard(folder_path,input_str):
         cv2.imshow('Resized_Window',images[i])
         cv2.waitKey(1000)
     fs.release()
+# 3.1 sol.
+# https://docs.opencv.org/4.x/dd/d53/tutorial_py_depthmap.html
+focal_len = 2826
+baseline = 178
+def onClick(event,x,y,flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        disparity,img_right = param
+        if(disparity[y][x]==0):
+            print("Failure case")
+        else:
+            x1 = x - disparity[y][x]
+            y1 = y
+            dist = focal_len * baseline / disparity[y][x]/100
+            print(f'({x1}, {y1}),dis:{dist: .2f}')
+            cv2.circle(img_right, (int(x1), y1), 20, (0, 255, 0), -1)
+            cv2.imshow('ImageR',img_right)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+def Stereo_Disparity_Map(img1_path,img2_path):
+    img_left = cv2.imread(img1_path)
+    img_left_gray = cv2.cvtColor(img_left, cv2.COLOR_BGR2GRAY)
+    img_right = cv2.imread(img2_path)
+    img_right_gray = cv2.cvtColor(img_right, cv2.COLOR_BGR2GRAY)
+    stereo = cv2.StereoBM_create(numDisparities=256, blockSize=25)
+    disparity = stereo.compute(img_left_gray, img_right_gray)
+    # Convert to gray_img
+    disparity_visual = cv2.normalize(disparity, disparity, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX).astype(np.uint8)
+
+    # show ImageL
+    cv2.namedWindow("ImageL", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("ImageL", 480, 270) 
+    cv2.setMouseCallback("ImageL", onClick,(disparity,img_right))
+    cv2.imshow('ImageL',img_left)
+    # show ImageR
+    cv2.namedWindow("ImageR", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("ImageR", 480, 270) 
+    cv2.imshow('ImageR',img_right)
+    # show disparity
+    cv2.namedWindow("disparity", cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow("disparity", 480, 270) 
+    cv2.imshow('disparity',disparity_visual)
+    cv2.waitKey(0)       
+    cv2.destroyAllWindows()

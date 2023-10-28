@@ -29,7 +29,7 @@
        <property name="title">
         <string>3. Stereo disparity map</string>
        </property>
-       <widget class="QPushButton" name="pushButton_14">
+       <widget class="QPushButton" name="Stereo_Disparity_Map_btn">
         <property name="geometry">
          <rect>
           <x>0</x>
