@@ -2,6 +2,12 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image 
+import torchvision.transforms as transforms 
+from torchsummary import summary
+from torchvision import models
+import torch
+import torch.nn.functional as F
 # 1.1 sol.
 def find_and_draw_corners(folder_path):
     images = []
@@ -22,9 +28,9 @@ def find_and_draw_corners(folder_path):
         cv2.drawChessboardCorners(img, (11,8),corners,ret)
         
     for img in images:
-        cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-        cv2.resizeWindow("Resized_Window", 500, 500) 
-        cv2.imshow('Resized_Window',img)
+        cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+        cv2.resizeWindow("output", 500, 500) 
+        cv2.imshow('output',img)
         cv2.waitKey(1000)        
 # 1.2 sol
 def find_Intrinsic_Matrix(folder_path):
@@ -137,11 +143,11 @@ def Show_Undistorted_Result(folder_path,Intrinsic_Mat,Distortion_Mat):
     
             
     for i in range(len(images)):
-        cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-        cv2.resizeWindow("Resized_Window", 1000, 1000) 
+        cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+        cv2.resizeWindow("output", 1000, 500) 
         Hori = np.concatenate((images[i], undistort_images[i]), axis=1) 
         
-        cv2.imshow('Resized_Window',Hori)
+        cv2.imshow('output',Hori)
         cv2.waitKey(1000)        
 # 2.1 sol.
 def get_parameters(folder_path):
@@ -206,9 +212,9 @@ def Show_Word_on_chessboard(folder_path,input_str):
                 if(point_idx % 2==0):
                     cv2.line(images[i],tuple(imgpts[point_idx].ravel().astype(np.int32)),tuple(imgpts[point_idx+1].ravel().astype(np.int32)),color=(0, 0, 255),thickness=10)
         # 2.2 print result of each image 
-        cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-        cv2.resizeWindow("Resized_Window", 500, 500) 
-        cv2.imshow('Resized_Window',images[i])
+        cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+        cv2.resizeWindow("output", 500, 500) 
+        cv2.imshow('output',images[i])
         cv2.waitKey(1000)
     fs.release()
 # 2.2 sol.
@@ -244,9 +250,9 @@ def Show_Word_ver_on_chessboard(folder_path,input_str):
                 if(point_idx % 2==0):
                     cv2.line(images[i],tuple(imgpts[point_idx].ravel().astype(np.int32)),tuple(imgpts[point_idx+1].ravel().astype(np.int32)),color=(0, 0, 255),thickness=10)
         # 2.2 print result of each image 
-        cv2.namedWindow("Resized_Window", cv2.WINDOW_NORMAL) 
-        cv2.resizeWindow("Resized_Window", 500, 500) 
-        cv2.imshow('Resized_Window',images[i])
+        cv2.namedWindow("output", cv2.WINDOW_NORMAL) 
+        cv2.resizeWindow("output", 500, 500) 
+        cv2.imshow('output',images[i])
         cv2.waitKey(1000)
     fs.release()
 # 3.1 sol.
@@ -329,3 +335,89 @@ def match_keypoints(img1_path,img2_path):
     cv2.resizeWindow("output", 1000, 500) 
     cv2.imshow('output',match_image)
     cv2.waitKey(0)
+# 5.1 
+def Show_Augmented_images():
+        train_transform = transforms.Compose([
+        transforms.RandomAutocontrast(p=0.5),
+        transforms.ColorJitter(saturation=0.2, brightness=0.2),
+        transforms.RandomGrayscale(p=0.3),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.RandomRotation(20)
+        ])
+        folder_path='./Dataset_CvDl_Hw1\Q5_image\Q5_1'
+        images = []
+        filenames = []
+        for filename in os.listdir(folder_path):
+            img = Image.open(os.path.join(folder_path,filename))
+            if img is not None:
+                # Data Augmenatatin
+                img = train_transform(img)
+                images.append(img)
+                filenames.append(filename.split(".")[0])
+        
+        plt.figure(figsize=(10, 10))
+        for i in range(9):
+            ax = plt.subplot(3, 3, i + 1)
+            img = images[i]
+            plt.imshow(img)
+            title = filenames[i]
+            plt.title(title)
+            plt.axis('off')
+        plt.show()
+# 5.2 sol.
+def Show_Model_Summary():
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = models.vgg19_bn(num_classes=10)
+    model.to(device)
+    summary(model, (3, 32, 32), -1, device)
+# 5.3 sol.
+def Show_Accuracy_and_Loss():
+    image1_path = './model\\result_picture\\loss_plot.png'
+    image2_path = './model\\result_picture\\accuracy_plot.png'
+    image1 = cv2.imread(image1_path)
+    image2 = cv2.imread(image2_path)
+    Hori = np.concatenate((image1, image2), axis=1)
+    cv2.imshow('output',Hori)
+    cv2.waitKey(0)     
+# 5.4 sol.
+def Inference(image_path):
+        classes = ['airplane',
+        'automobile',
+        'bird',
+        'cat',
+        'deer',
+        'dog',
+        'frog',
+        'horse',
+        'ship',
+        'truck']
+        # define model
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = models.vgg19_bn(num_classes=10)
+        weight = torch.load('./model\\vgg19_bn.pth')
+        model.load_state_dict(weight)
+        model.eval()
+        model.to(device)    
+        # load image
+        transform = transforms.Compose([
+        transforms.ToTensor()
+        ])
+        image = Image.open(image_path)
+        image = transform(image)
+        image = image.unsqueeze(0)
+        image = image.to(device)
+        # Inference
+        with torch.no_grad():
+            output = model(image)
+            probabilities = F.softmax(output,1)
+            _, predicts = torch.max(output, 1)
+            predict_class = classes[predicts]
+            output_np = probabilities.cpu().detach().numpy().ravel()
+            plt.figure(figsize=(10, 10))
+            plt.bar(range(len(output_np)), output_np)
+            plt.xticks(range(len(output_np)), classes) 
+            plt.xlabel('Class')
+            plt.ylabel('Probability')
+            plt.title('Probability of each class')
+            plt.show()
+        return predict_class
