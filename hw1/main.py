@@ -12,13 +12,16 @@ class UI(QMainWindow):
         self.folder_path = ""
         self.imageL_path = ""
         self.imageR_path = ""
+        self.image1_path = ""
+        self.image2_path = ""
+        self.image_q5__path = ""
         self.intrinsic_mat = []
         self.distortion_mat = []
         self.load_folder_btn.clicked.connect(self.openFolder)
         self.load_imageL_btn.clicked.connect(lambda: self.openImage(0))
         self.load_imageR_btn.clicked.connect(lambda: self.openImage(1))
-        self.load_image1_btn.clicked.connect(lambda: self.openImage(0))
-        self.load_image2_btn.clicked.connect(lambda: self.openImage(1))
+        self.load_image1_btn.clicked.connect(lambda: self.openImage2(0))
+        self.load_image2_btn.clicked.connect(lambda: self.openImage2(1))
         self.q5_load_img_btn.clicked.connect(lambda: self.openImage_and_show())
         self.find_corners_btn.clicked.connect(self.find_and_draw_corners)
         self.find_intrinsic_btn.clicked.connect(self.find_Intrinsic_Matrix)
@@ -28,8 +31,8 @@ class UI(QMainWindow):
         self.show_words_hori_btn.clicked.connect(self.Show_Word_on_chessboard)
         self.show_words_vert_btn.clicked.connect(self.Show_Word_ver_on_chessboard)
         self.Stereo_Disparity_Map_btn.clicked.connect(lambda: Stereo_Disparity_Map(self.imageL_path,self.imageR_path))
-        self.find_keypoints_btn.clicked.connect(lambda:find_keypoints(self.imageL_path))
-        self.match_keypoints_btn.clicked.connect(lambda:match_keypoints(self.imageL_path,self.imageR_path))
+        self.find_keypoints_btn.clicked.connect(lambda:find_keypoints(self.image1_path))
+        self.match_keypoints_btn.clicked.connect(lambda:match_keypoints(self.image1_path,self.image2_path))
         self.show_augmented_img_btn.clicked.connect(lambda:Show_Augmented_images())
         self.show_model_summary_btn.clicked.connect(lambda:Show_Model_Summary())
         self.show_acc_loss_btn.clicked.connect(lambda:Show_Accuracy_and_Loss())
@@ -43,16 +46,19 @@ class UI(QMainWindow):
             self.imageL_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')  
         else:
             self.imageR_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')
+    def openImage2(self,type):
+        if type==0:
+            self.image1_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')  
+        else:
+            self.image2_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')
     def openImage_and_show(self):  
             self.predict_text.setText("Predict = ")
-            self.imageL_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')
-            pixmap = QPixmap(self.imageL_path)  # 替換成你的圖片文件路徑
-            pixmap_item = QGraphicsPixmapItem(pixmap)
+            self.image_q5__path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')
             # Clear scene
             self.input_img.setScene(None)
             scene = QGraphicsScene()
             # load 32*32 small img
-            small_pixmap = QPixmap(self.imageL_path)
+            small_pixmap = QPixmap(self.image_q5__path)
             # create large img 256*192
             large_image = QImage(256, 192, QImage.Format_ARGB32)
             large_image.fill(0)
@@ -80,7 +86,7 @@ class UI(QMainWindow):
     def Show_Word_ver_on_chessboard(self):
         Show_Word_ver_on_chessboard(self.folder_path,self.question2_textEdit.toPlainText())
     def Inference(self):
-        predict = Inference(self.imageL_path)
+        predict = Inference(self.image_q5__path)
         self.predict_text.setText("Predict = " + predict)
 
 
