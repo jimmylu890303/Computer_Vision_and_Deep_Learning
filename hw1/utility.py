@@ -256,9 +256,6 @@ def Show_Word_ver_on_chessboard(folder_path,input_str):
         cv2.waitKey(1000)
     fs.release()
 # 3.1 sol.
-# https://docs.opencv.org/4.x/dd/d53/tutorial_py_depthmap.html
-focal_len = 2826
-baseline = 178
 def onClick(event,x,y,flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         disparity,img_right = param
@@ -267,7 +264,7 @@ def onClick(event,x,y,flags, param):
         else:
             x1 = x - disparity[y][x]
             y1 = y
-            dist = focal_len * baseline / disparity[y][x]/100
+            dist = disparity[y][x]
             print(f'({x1}, {y1}),dis:{dist: .2f}')
             cv2.circle(img_right, (int(x1), y1), 20, (0, 255, 0), -1)
             cv2.imshow('ImageR',img_right)
