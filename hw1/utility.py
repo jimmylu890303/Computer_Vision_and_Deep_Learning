@@ -8,6 +8,36 @@ from torchsummary import summary
 from torchvision import models
 import torch
 import torch.nn.functional as F
+def get_parameters(folder_path):
+    images = []
+    for filename in os.listdir(folder_path):
+        img = cv2.imread(os.path.join(folder_path,filename))
+        if img is not None:
+            images.append(img)
+    # 3-dimension coordinate in real world
+    objectPoints = []
+    objp = np.zeros((8 * 11, 3), np.float32)
+    k=0
+    for i in range(8):
+        for j in range(11):
+            objp[k] = [j,i,0]
+            k=k+1
+    # 2-dimension coordinate in image plane
+    imagePoints = []
+    # find all corner points in images
+    for img in images:
+        winSize = (5, 5)               
+        zeroZone = (-1, -1)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        ret,corners = cv2.findChessboardCorners(gray_img, (11, 8))
+        corners = cv2.cornerSubPix(gray_img, corners, winSize, zeroZone, criteria)
+        imagePoints.append(corners)
+        objectPoints.append(objp)
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objectPoints, imagePoints,(2048, 2048), None, None)
+
+    return mtx, dist, rvecs, tvecs
 # 1.1 sol.
 def find_and_draw_corners(folder_path):
     images = []
@@ -130,7 +160,8 @@ def Find_Distortion_Matrix(folder_path):
     print(dist)
     return dist
 # 1.5 sol
-def Show_Undistorted_Result(folder_path,Intrinsic_Mat,Distortion_Mat):
+def Show_Undistorted_Result(folder_path):
+    mtx, dist, rvecs, tvecs = get_parameters(folder_path)
     images = []
     for filename in os.listdir(folder_path):
         img = cv2.imread(os.path.join(folder_path,filename))
@@ -138,7 +169,7 @@ def Show_Undistorted_Result(folder_path,Intrinsic_Mat,Distortion_Mat):
             images.append(img)
     undistort_images = []
     for img in images:
-        undistort_image = cv2.undistort(img,Intrinsic_Mat,Distortion_Mat) 
+        undistort_image = cv2.undistort(img,mtx,dist) 
         undistort_images.append(undistort_image)
     
             
@@ -150,36 +181,6 @@ def Show_Undistorted_Result(folder_path,Intrinsic_Mat,Distortion_Mat):
         cv2.imshow('output',Hori)
         cv2.waitKey(1000)        
 # 2.1 sol.
-def get_parameters(folder_path):
-    images = []
-    for filename in os.listdir(folder_path):
-        img = cv2.imread(os.path.join(folder_path,filename))
-        if img is not None:
-            images.append(img)
-    # 3-dimension coordinate in real world
-    objectPoints = []
-    objp = np.zeros((8 * 11, 3), np.float32)
-    k=0
-    for i in range(8):
-        for j in range(11):
-            objp[k] = [j,i,0]
-            k=k+1
-    # 2-dimension coordinate in image plane
-    imagePoints = []
-    # find all corner points in images
-    for img in images:
-        winSize = (5, 5)               
-        zeroZone = (-1, -1)
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        ret,corners = cv2.findChessboardCorners(gray_img, (11, 8))
-        corners = cv2.cornerSubPix(gray_img, corners, winSize, zeroZone, criteria)
-        imagePoints.append(corners)
-        objectPoints.append(objp)
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objectPoints, imagePoints,(2048, 2048), None, None)
-
-    return mtx, dist, rvecs, tvecs
 def Show_Word_on_chessboard(folder_path,input_str):
     images = []
     for filename in os.listdir(folder_path):

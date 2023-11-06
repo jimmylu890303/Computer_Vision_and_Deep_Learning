@@ -15,8 +15,6 @@ class UI(QMainWindow):
         self.image1_path = ""
         self.image2_path = ""
         self.image_q5__path = ""
-        self.intrinsic_mat = []
-        self.distortion_mat = []
         self.load_folder_btn.clicked.connect(self.openFolder)
         self.load_imageL_btn.clicked.connect(lambda: self.openImage(0))
         self.load_imageR_btn.clicked.connect(lambda: self.openImage(1))
@@ -80,7 +78,7 @@ class UI(QMainWindow):
     def Find_Distortion_Matrix(self):
         self.distortion_mat = Find_Distortion_Matrix(self.folder_path)
     def Show_Undistorted_Result(self):
-        Show_Undistorted_Result(self.folder_path,self.intrinsic_mat,self.distortion_mat)
+        Show_Undistorted_Result(self.folder_path)
     def Show_Word_on_chessboard(self):
         Show_Word_on_chessboard(self.folder_path,self.question2_textEdit.toPlainText())
     def Show_Word_ver_on_chessboard(self):
