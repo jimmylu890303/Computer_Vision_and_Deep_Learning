@@ -108,7 +108,7 @@
        <property name="title">
         <string>3. PCA</string>
        </property>
-       <widget class="QPushButton" name="pushButton_6">
+       <widget class="QPushButton" name="PCA_btn">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -149,41 +149,48 @@
           <height>231</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="sol4_layout">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QPushButton" name="pushButton_7">
+            <widget class="QPushButton" name="show_model_btn">
              <property name="text">
               <string>1. Show Model Structure</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_8">
+            <widget class="QPushButton" name="show_acc_loss_btn">
              <property name="text">
               <string>2. Show Accurancy and Loss</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_9">
+            <widget class="QPushButton" name="predict_mnist_btn">
              <property name="text">
               <string>3. Predict</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_10">
+            <widget class="QPushButton" name="reset_btn">
              <property name="text">
               <string>4. Reset</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="mnist_predict">
+             <property name="text">
+              <string>Predict = </string>
              </property>
             </widget>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QGraphicsView" name="graphicsView"/>
+          <widget class="QGraphicsView" name="paint_view"/>
          </item>
         </layout>
        </widget>
@@ -259,7 +266,7 @@
      <x>0</x>
      <y>0</y>
      <width>900</width>
-     <height>18</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

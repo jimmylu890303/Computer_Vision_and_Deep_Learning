@@ -1,5 +1,19 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+import torchvision.transforms as transforms 
+from torchsummary import summary
+from torchvision import models
+import torch
+import torch.nn.functional as F
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+vgg_model = models.vgg19_bn(num_classes=10)
+weight = torch.load('.\model\\vgg19bn_best.pth')
+vgg_model.load_state_dict(weight)
+vgg_model.eval()
+vgg_model.to(device)
 
 # 1.1 Sol.
 def BackgroundSubstraction(video_path):
@@ -24,10 +38,6 @@ def BackgroundSubstraction(video_path):
         imgs = np.hstack([frame,mask_result,result])
         cv2.imshow("BackgroundSubstraction", imgs)
         cv2.waitKey(1)
-    # 釋放資源與關閉視窗
-    cap.release()
-    cv2.destroyAllWindows()
-    print('Done')
 
 # 2.1 SOL 
 def detect_and_mark_point(frame):
@@ -113,3 +123,75 @@ def VideoTracking(video_path):
 
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1,1,2)
+    
+# 3.1 Sol.
+def PCA_SOL(image_path):
+
+    image = cv2.imread(image_path)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Normalize Image
+    gray_image_normalized = gray_image / 255.0
+
+    # Find min components n s.t mse<0.3
+    min_dimension = min(gray_image.shape)
+    n = 1
+    reconstruction_error = float('inf')
+    while n <= min_dimension:
+        pca = PCA(n_components=n)
+        transformed = pca.fit_transform(gray_image_normalized)
+        reconstructed = pca.inverse_transform(transformed)
+        reconstructed_image = reconstructed.reshape(gray_image.shape)
+        mse = np.mean((gray_image - reconstructed_image*255) ** 2)
+        if mse <= 3.0:
+            reconstruction_error = mse
+            break
+        n += 1
+    print(f"Reconstruct Image with {n} components")
+
+    # Reconstructed Image
+    pca = PCA(n_components=n)
+    transformed = pca.fit_transform(gray_image_normalized)
+    reconstructed = pca.inverse_transform(transformed)
+    reconstructed_image = reconstructed.reshape(gray_image.shape)
+
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.title('Original Gray Image')
+    plt.imshow(gray_image, cmap='gray')
+    plt.axis('off')
+    plt.subplot(1, 2, 2)
+    plt.title(f'Using {n} Components Reconstructed Image\nMSE: {reconstruction_error:.4f}')
+    plt.imshow(reconstructed_image, cmap='gray')
+    plt.axis('off')
+    plt.show()
+
+# 4.1 Sol.
+def Show_Model_Summary():
+    summary(vgg_model, (3, 32, 32), -1, device)
+# 4.3 Sol.
+def predict_mnist(img):
+    classes = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+
+    transform = transforms.Compose([
+        transforms.Resize(32),
+        transforms.ToTensor(),
+    ])
+
+    img = transform(img)
+    img = img.to(device)  
+
+    output = vgg_model(img.unsqueeze(0))  
+    probabilities = F.softmax(output,1)
+    _, predicted = torch.max(output, 1)
+    predicted_label = classes[predicted]
+    output_np = probabilities.cpu().detach().numpy().ravel()
+    plt.figure(figsize=(10, 10))
+    plt.bar(range(len(output_np)), output_np)
+    plt.xticks(range(len(output_np)), classes) 
+    plt.xlabel('Class')
+    plt.ylabel('Probability')
+    plt.title('Probability of each class')
+    plt.show()
+
+    return predicted_label
