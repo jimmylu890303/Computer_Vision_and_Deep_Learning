@@ -53,6 +53,7 @@ class UI(QMainWindow):
         loadUi(".\hw2.ui",self)
         self.video_path = ""
         self.image_path = ""
+        self.image_q5__path = ""
         self.initPaint()
 
         self.load_img_btn.clicked.connect(self.loadImage)
@@ -65,7 +66,29 @@ class UI(QMainWindow):
         self.show_acc_loss_btn.clicked.connect(self.Show_Accuracy_and_Loss)
         self.predict_mnist_btn.clicked.connect(self.predict)
         self.reset_btn.clicked.connect(self.reset)
+        self.load_q5Img_btn.clicked.connect(self.load_show_image)
+        self.show_resnet50_btn.clicked.connect(show_ResNet50_Model_Summary)
+        self.show_q5_img_btn.clicked.connect(show_class_image)
+        self.Show_Comprasion_btn.clicked.connect(show_accurancy_comparison)
+        self.resnet50_predict_btn.clicked.connect(self.predictCatDog)
 
+    def load_show_image(self):
+        self.image_q5__path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.png *.jpg')
+        self.resnet_predict.setText(f'Predict = ')
+        # Clear scene
+        self.input_img.setScene(None)
+        scene = QGraphicsScene()
+        small_pixmap = QPixmap(self.image_q5__path)
+        large_image = QImage(224, 224, QImage.Format_ARGB32)
+        large_image.fill(0)
+        painter = QPainter(large_image)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform) 
+        painter.drawImage(0, 0, small_pixmap.toImage().scaled(224, 224))
+        painter.end()
+        # add to widget
+        pixmap_item = QGraphicsPixmapItem(QPixmap.fromImage(large_image))
+        scene.addItem(pixmap_item)
+        self.input_img.setScene(scene)
     def loadVideo(self):
         self.video_path, _ = QFileDialog.getOpenFileName(self,'Open Files','','*.mp4')  
     def loadImage(self):
@@ -125,7 +148,9 @@ class UI(QMainWindow):
         self.sol4_layout.insertWidget(index, self.canvas)
         self.paint_view.deleteLater()  # Delete the old paint_view
         self.paint_view = self.canvas  # Assign canvas to paint_view
-
+    def predictCatDog(self):
+        label = predict_resnet50(self.image_q5__path)
+        self.resnet_predict.setText(f'Predict = {label}')
     
 app = QApplication(sys.argv)
 MainWindow = UI()
